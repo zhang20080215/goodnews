@@ -2,45 +2,63 @@ name: Daily Auto Post
 
 on:
   schedule:
-    - cron: '0 0,8,16 * * *' # 每天北京时间 8点, 16点, 24点 运行
-  workflow_dispatch: # 允许手动触发
+    # 对应 UTC+0 时间的 00:00, 06:00, 12:00, 18:00 自动触发
+    - cron: '0 0,6,12,18 * * *'
+  # 允许在 GitHub Actions 界面手动点击 "Run workflow" 进行测试
+  workflow_dispatch:
 
-# 💡 增加以下权限配置，允许机器人把查重记录 push 回仓库
+# 核心权限配置：允许 Action 修改仓库中的 processed_urls.txt 并提交回传
 permissions:
   contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # 建议升级到 v4
+        uses: actions/checkout@v4
+        with:
+          # 确保获取完整历史，以便能够 push 回传
+          persist-credentials: true
 
       - name: Set up Python
-        uses: actions/setup-python@v5 # 建议升级到 v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+          # 开启缓存可以加快后续运行速度
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # 确保安装了项目中用到的所有库
           pip install requests feedparser python-dotenv
 
       - name: Run Auto Bot
         env:
+          # 以下变量需在 GitHub 仓库 Settings -> Secrets -> Actions 中配置
           WP_SITE_URL: ${{ secrets.WP_SITE_URL }}
           WP_USERNAME: ${{ secrets.WP_USERNAME }}
           WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DEEPSEEK_BASE_URL: https://api.deepseek.com
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          # 预留邮件服务所需的密钥
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         run: python main.py
 
       - name: Commit and push changes
         run: |
+          # 配置 Git 机器人身份
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 检查文件是否有变动
           git add processed_urls.txt
-          # 如果没有变化就跳过提交，防止报错
+          
+          # 提交更改。使用 [skip ci] 避免由于自动提交再次触发 Action 导致死循环
           git commit -m "Update processed urls [skip ci]" || echo "No changes to commit"
+          
+          # 推送回当前分支
           git push
