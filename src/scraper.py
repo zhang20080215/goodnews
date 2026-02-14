@@ -5,7 +5,10 @@ class Scraper:
     def __init__(self):
         self.sources = {
             "en": ["https://www.goodnewsnetwork.org/category/news/feed/"],
-            "zh": ["https://www.thepaper.cn/rss_pms.jsp"] 
+            "zh": [
+                "https://www.zaobao.com/rss/realtime/china", # 联合早报
+                "http://www.chinanews.com.cn/rss/scroll-news.xml" # 中国新闻网
+            ]
         }
 
     def fetch_all(self, limit=3):
