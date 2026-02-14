@@ -13,7 +13,7 @@ NEWS_SOURCES = [
 ]
 
 # 每个数据源抓取的新闻数量限制（建议设为 2-3，防止 AI 处理过慢）
-FETCH_LIMIT_PER_SOURCE = 2
+FETCH_LIMIT_PER_SOURCE = 5
 
 # --- WordPress 分类配置 ---
 # 请确保这些 ID 与你 WP 后台 -> 文章 -> 分类目录中的 ID 一致
