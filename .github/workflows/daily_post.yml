@@ -1,0 +1,36 @@
+name: Daily Good News Post
+
+on:
+  schedule:
+    - cron: "0 1 * * *" # 每天 UTC 1 点（根据需要调整）
+  workflow_dispatch:
+
+jobs:
+  run-daily-post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run daily post script
+        env:
+          # 在 GitHub 仓库 Settings → Secrets and variables → Actions 中配置这些变量
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
+          WORDPRESS_USER: ${{ secrets.WORDPRESS_USER }}
+          WORDPRESS_APP_PASSWORD: ${{ secrets.WORDPRESS_APP_PASSWORD }}
+        run: |
+          python main.py
+
