@@ -1,5 +1,6 @@
 requests
 python-dotenv
+feedparser
 
 # 如需对接 DeepSeek / 其他大模型与 WordPress，可根据实际选型添加：
 # openai
