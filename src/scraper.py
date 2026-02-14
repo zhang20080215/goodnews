@@ -1,16 +1,26 @@
 import feedparser
 import requests
+import re
+import os
+# 确保这一行导入了配置
+from config import NEWS_SOURCES, FETCH_LIMIT_PER_SOURCE, HISTORY_FILE
 
 class Scraper:
     def __init__(self):
-        # 💡 精选 5 个高质量英文正能量源
-        self.sources = [
-            "https://www.goodnewsnetwork.org/category/news/feed/",
-            "https://www.positive.news/feed/",
-            "https://www.optimistdaily.com/feed/",
-            "https://reasonstobecheerful.world/feed/",
-            "https://www.goodgoodgood.co/feed/"
-        ]
+        # 👇 确保下面这些行前面有 8 个空格（或 2 个 Tab）
+        self.sources = NEWS_SOURCES
+        self.limit = FETCH_LIMIT_PER_SOURCE
+        self.history_file = HISTORY_FILE
+        self.processed_urls = self._load_history()
+
+    def _load_history(self):
+        """加载已处理的 URL"""
+        if os.path.exists(self.history_file):
+            with open(self.history_file, 'r', encoding='utf-8') as f:
+                return set(line.strip() for line in f if line.strip())
+        return set()
+
+    # ... 其他函数也要保持正确的缩进层级
 
     def fetch_all(self, limit=3):
         news_list = []
